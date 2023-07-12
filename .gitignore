@@ -1,3 +1,6 @@
+# Project-specific
+test-repo/
+
 # Compiled Lua sources
 luac.out
 

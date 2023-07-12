@@ -2,6 +2,17 @@
 
 Munin is a note-taking library and knowledge base written in Lua. It is named after one of [Odin's ravens](https://en.wikipedia.org/wiki/Huginn_and_Muninn) in Norse mythology and means "memory" in Old Norse.
 
+## Development
+
+In order to use the `repl` or `munin-cli` scripts the library will need to be added to your `LUA_PATH`:
+```
+LUA_PATH=/path/to/repo/lib/?/init.lua;/path/to/repo/lib/munin/?.lua;;
+```
+
+The `;;` at the end ensures the default path is appended after these entries when Lua is loaded.
+
+Running `./repl` will open a Lua REPL with the library loaded into the table `munin`.
+
 ## Plans
 
 Notes will be added to a SQLite database. They will support various tagging and categorizing functionality. The full-text search capabilities of SQLite will allow users to search through notes easily.

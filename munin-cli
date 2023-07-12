@@ -1,0 +1,25 @@
+#!/usr/bin/env lua5.1
+
+local munin = require("munin")
+local lfs = require("lfs")
+
+print(":munin-cli.lua")
+print(arg[0], arg[1])
+print(lfs.currentdir())
+
+if (arg[1] == "get-note") then
+    local note, err = munin.get_note(lfs.currentdir(), arg[2])
+    if note then
+        print(note.title)
+        print(note.content)
+    else
+        print("[Error] "..err)
+    end
+elseif (arg[1] == "add-note") then
+    local title = arg[2]
+    local content = io.read("*a")
+    local _, err = munin.add_note(lfs.currentdir(), title, content, "", {})
+    if err then
+        print("[Error] "..err)
+    end
+end
