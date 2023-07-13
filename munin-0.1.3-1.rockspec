@@ -1,8 +1,8 @@
 package = "munin"
-version = "0.1.2-1"
+version = "0.1.3-1"
 source = {
    url = "git+ssh://git@github.com/mattherman/munin.git",
-   tag = "0.1.2"
+   tag = "0.1.3"
 }
 description = {
    summary = "A note-taking library and knowledge base written in Lua.",
@@ -17,16 +17,18 @@ dependencies = {
    "lsqlite3",
    "luafilesystem"
 }
+external_dependencies = {
+   SQLITE = {
+      header = "sqlite3.h"
+   }
+}
 build = {
    type = "builtin",
    modules = {
-      ["munin.data"] = "munin/data.lua",
-      ["munin.api"] = "munin/api.lua"
+      ["munin.api"] = "lib/munin/api.lua",
+      ["munin.data"] = "lib/munin/data.lua"
    },
-   copy_directories = { "docs" }
-}
-external_dependencies = {
-    SQLITE = {
-        header = "sqlite3.h"
-    }
+   copy_directories = {
+      "docs"
+   }
 }
