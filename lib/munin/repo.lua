@@ -100,6 +100,14 @@ function repo.get_notes()
     return database.query_notes(db_path(repo._path), {})
 end
 
+function repo.search_notes(search_term)
+    if not repo_exists(repo._path) then
+        return nil, "Repository at "..repo._path.." does not exist"
+    end
+
+    return database.search_notes(db_path(repo._path), search_term)
+end
+
 function repo.create_new()
     local config = config_path(repo._path)
     local db = db_path(repo._path)

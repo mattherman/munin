@@ -12,16 +12,15 @@ if arg[1] == "init" then
         print("Initialized new repository at "..repo._path)
     end
 elseif (arg[1] == "get-note") then
-    print("Is this working?")
-    local title = arg[2]
-    local note, err = repo.get_notes_by_title(title)
+    local path = arg[2]
+    local note, err = repo.get_note(path)
     if note then
         print(note.title)
         print(note.content)
     elseif err then
         print("[Error] "..err)
     else
-        print("Note titled '"..title.."' not found")
+        print("Note titled '"..path.."' not found")
     end
 elseif (arg[1] == "add-note") then
     local title = arg[2]
@@ -30,6 +29,16 @@ elseif (arg[1] == "add-note") then
     local _, err = repo.add_note(title, content, category)
     if err then
         print("[Error] "..err)
+    end
+elseif (arg[1] == "search") then
+    local search = arg[2]
+    local notes, err = repo.search_notes(search)
+    if err then
+        print("[Error] "..err)
+    elseif notes then
+        for _, note in ipairs(notes) do
+            print(note.path, note.snippet)
+        end
     end
 else
     print([[

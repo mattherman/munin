@@ -1,6 +1,5 @@
 local sql = require("lsqlite3")
 
-
 local M = {}
 
 local function format_sqlite_error(code, msg)
@@ -46,29 +45,38 @@ end
 function M.create_database(db_file)
     local statement = [=[
         CREATE TABLE notes (
-            id integer PRIMARY KEY,
+            path text PRIMARY KEY,
             title text NOT NULL,
-            category text NOT NULL,
-            path text NOT NULL,
-            content text NOT NULL
+            category text NOT NULL
         );
 
-        CREATE TABLE tags (
-            tag text PRIMARY KEY
+        CREATE VIRTUAL TABLE notes_search USING FTS5(
+            path UNINDEXED,
+            title,
+            content
         );
 
         CREATE TABLE note_tags (
             tag text NOT NULL,
-            note_id integer NOT NULL,
-            FOREIGN KEY (tag) REFERENCES tags (tag),
-            FOREIGN KEY (note_id) REFERENCES notes (id)
+            note_path text NOT NULL,
+            FOREIGN KEY (note_path) REFERENCES notes (path)
         );
     ]=]
     return exec_statement(db_file, statement)
 end
 
 function M.add_note(db_file, new_note)
-    local query = string.format("INSERT INTO notes (title, category, path, content) VALUES ('%s', '%s', '%s', '%s')", new_note.title, new_note.category, new_note.path, new_note.content)
+    local query = string.format([=[
+        INSERT INTO notes (title, category, path) VALUES ('%s', '%s', '%s');
+        INSERT INTO notes_search (path, title, content) VALUES ('%s', '%s', '%s');
+        ]=],
+        new_note.title,
+        new_note.category,
+        new_note.path,
+        new_note.path,
+        new_note.title,
+        new_note.content)
+    print(query)
     return exec_statement(db_file, query)
 end
 
@@ -88,10 +96,10 @@ query = {
 --]]
 function M.query_notes(db_file, conditions)
     local add_match = function(t, k, v)
-        table.insert(t, string.format("AND %s = '%s'", k, v))
+        table.insert(t, string.format("AND n.%s = '%s'", k, v))
     end
     local add_like = function(t, k, v)
-        table.insert(t, string.format("AND %s like '%s'", k, v))
+        table.insert(t, string.format("AND n.%s like '%s'", k, v))
     end
 
     local add_condition = {
@@ -100,7 +108,17 @@ function M.query_notes(db_file, conditions)
     }
 
     local query_parts = {
-        "SELECT * FROM notes WHERE 1=1"
+        [=[
+            SELECT
+                n.path,
+                n.title,
+                n.category,
+                ns.content
+            FROM notes AS n
+            INNER JOIN notes_search AS ns
+                ON n.path = ns.path
+            WHERE 1=1
+        ]=]
     }
 
     for k, c in pairs(conditions) do
@@ -108,6 +126,23 @@ function M.query_notes(db_file, conditions)
     end
 
     local query = table.concat(query_parts, " ")
+    return exec_query(db_file, query)
+end
+
+-- Underline control characters = \x1B[4m<my_text>\x1B[0m
+function M.search_notes(db_file, search_term)
+    local query = string.format([=[
+        SELECT
+            n.path,
+            n.title,
+            n.category,
+            ns.content,
+            snippet(notes_search, -1, '', '', '', 16) as snippet
+        FROM notes_search('%s') AS ns
+        INNER JOIN notes AS n
+            ON ns.path = n.path
+        ]=],
+        search_term)
     return exec_query(db_file, query)
 end
 
