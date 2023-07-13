@@ -49,6 +49,7 @@ function M.create_database(db_file)
             id integer PRIMARY KEY,
             title text NOT NULL,
             category text NOT NULL,
+            path text NOT NULL,
             content text NOT NULL
         );
 
@@ -63,22 +64,51 @@ function M.create_database(db_file)
             FOREIGN KEY (note_id) REFERENCES notes (id)
         );
     ]=]
-    exec_statement(db_file, statement)
+    return exec_statement(db_file, statement)
 end
 
 function M.add_note(db_file, new_note)
-    local query = string.format("INSERT INTO notes (title, category, content) VALUES ('%s', '%s', '%s')", new_note.title, new_note.category, new_note.content)
+    local query = string.format("INSERT INTO notes (title, category, path, content) VALUES ('%s', '%s', '%s', '%s')", new_note.title, new_note.category, new_note.path, new_note.content)
     return exec_statement(db_file, query)
 end
 
-function M.get_note(db_file, title)
-    local query = string.format("SELECT * FROM notes WHERE title = '%s'", title)
-    local notes, error_msg = exec_query(db_file, query)
-    if notes then
-        return notes[1]
-    else
-        return nil, error_msg
+--[[
+
+query = {
+    title = {
+        type = "match",
+        value = "My Title"
+    },
+    category = {
+        type = "like"
+        value = "category/%"
+    }
+}
+
+--]]
+function M.query_notes(db_file, conditions)
+    local add_match = function(t, k, v)
+        table.insert(t, string.format("AND %s = '%s'", k, v))
     end
+    local add_like = function(t, k, v)
+        table.insert(t, string.format("AND %s like '%s'", k, v))
+    end
+
+    local add_condition = {
+        match = add_match,
+        like = add_like
+    }
+
+    local query_parts = {
+        "SELECT * FROM notes WHERE 1=1"
+    }
+
+    for k, c in pairs(conditions) do
+        add_condition[c.type](query_parts, k, c.value)
+    end
+
+    local query = table.concat(query_parts, " ")
+    return exec_query(db_file, query)
 end
 
 return M

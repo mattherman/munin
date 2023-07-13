@@ -24,6 +24,7 @@ function repo.add_note(title, text, category)
     local note = {
         title = title,
         category = category,
+        path = category.."/"..title,
         content = text
     }
     local error_msg = database.add_note(db_path(repo._path), note)
@@ -34,12 +35,69 @@ function repo.add_note(title, text, category)
     end
 end
 
-function repo.get_note(title)
+function repo.get_note(path)
     if not repo_exists(repo._path) then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
-    return database.get_note(db_path(repo._path), title)
+    local query = {
+        path = { type = "match", value = path }
+    }
+    local notes, error_msg = database.query_notes(db_path(repo._path), query)
+
+    if notes then
+        return notes[1]
+    else
+        return nil, error_msg
+    end
+end
+
+function repo.get_notes_by_title(title)
+    if not repo_exists(repo._path) then
+        return nil, "Repository at "..repo._path.." does not exist"
+    end
+
+    local query = {
+        title = { type = "match", value = title }
+    }
+    return database.query_notes(db_path(repo._path), query)
+end
+
+function repo.get_notes_by_category(category)
+    if not repo_exists(repo._path) then
+        return nil, "Repository at "..repo._path.." does not exist"
+    end
+
+    local category_query = {
+        category = { type = "match", value = category }
+    }
+    local category_notes, category_error = database.query_notes(db_path(repo._path), category_query)
+    if category_error then
+        return nil, category_error
+    end
+
+    local subcategory_query = {
+        category = { type = "like", value = category.."/%" }
+    }
+    local subcategory_notes, subcategory_error = database.query_notes(db_path(repo._path), subcategory_query)
+    if subcategory_error then
+        return nil, category_error
+    end
+
+    local notes = category_notes or {}
+    for _, v in ipairs(subcategory_notes or {}) do
+        table.insert(notes, v)
+    end
+
+    return notes
+end
+
+function repo.get_notes()
+    if not repo_exists(repo._path) then
+        return nil, "Repository at "..repo._path.." does not exist"
+    end
+
+    return database.query_notes(db_path(repo._path), {})
 end
 
 function repo.create_new()
