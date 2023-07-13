@@ -1,6 +1,5 @@
 local sql = require("lsqlite3")
 
-print(":lib/munin/data.lua")
 
 local M = {}
 
@@ -14,13 +13,11 @@ local function format_sqlite_error(code, msg)
 end
 
 local function exec_statement(db_file, statement)
-    print(db_file)
     local db, open_error_code, open_error_msg = sql.open(db_file)
     if not db then
         return format_sqlite_error(open_error_code, open_error_msg)
     end
 
-    print(statement)
     local exec_error_code = db:exec(statement)
     db:close()
 
@@ -30,7 +27,6 @@ local function exec_statement(db_file, statement)
 end
 
 local function exec_query(db_file, query)
-    print(db_file)
     local db, open_error_code, open_error_msg = sql.open(db_file)
     if not db then
         return nil, format_sqlite_error(open_error_code, open_error_msg)
@@ -38,7 +34,6 @@ local function exec_query(db_file, query)
 
     local results = {}
 
-    print(query)
     -- TODO: Investigate error handling here, pcall?
     for result in db:nrows(query) do
         table.insert(results, result)

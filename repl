@@ -1,3 +1,3 @@
 #!/bin/bash
 cd ./lib
-lua5.1 -i -e 'munin = require("munin.init")'
+lua5.1 -i -e 'munin = require("munin.repo")'

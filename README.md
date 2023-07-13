@@ -6,7 +6,7 @@ Munin is a note-taking library and knowledge base written in Lua. It is named af
 
 In order to use the `repl` or `munin-cli` scripts the library will need to be added to your `LUA_PATH`:
 ```
-LUA_PATH=/path/to/repo/lib/?/init.lua;/path/to/repo/lib/munin/?.lua;;
+LUA_PATH=/path/to/repo/lib/munin/?.lua;;
 ```
 
 The `;;` at the end ensures the default path is appended after these entries when Lua is loaded.
