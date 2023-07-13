@@ -1,8 +1,8 @@
 package = "munin"
-version = "0.1.1-1"
+version = "0.1.2-1"
 source = {
    url = "git+ssh://git@github.com/mattherman/munin.git",
-   tag = "0.1.1"
+   tag = "0.1.2"
 }
 description = {
    summary = "A note-taking library and knowledge base written in Lua.",
@@ -15,7 +15,7 @@ description = {
 dependencies = {
    "lua >= 5.1, < 5.5",
    "lsqlite3",
-   "lfs"
+   "luafilesystem"
 }
 build = {
    type = "builtin",
