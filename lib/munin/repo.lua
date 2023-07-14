@@ -18,12 +18,23 @@ local function repo_exists(repo_path)
     return db ~= nil, err
 end
 
+local function parse_tags(text)
+    local tags = {}
+    for tag in text:gmatch("%@([%w-_]+)") do
+        table.insert(tags, tag)
+    end
+    return tags
+end
+
 local repo = {}
 
 function repo.add_note(title, text, category)
     if not repo_exists(repo._path) then
         return nil, "Repository at "..repo._path.." does not exist"
     end
+
+    local tags = parse_tags(text)
+    for _, t in ipairs(tags) do print("TAG: "..t) end
 
     local path = title
     if category then
@@ -33,6 +44,7 @@ function repo.add_note(title, text, category)
     local note = {
         title = title,
         category = category,
+        tags = tags,
         path = path,
         content = text
     }

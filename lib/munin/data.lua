@@ -66,7 +66,7 @@ function M.create_database(db_file)
 end
 
 function M.add_note(db_file, new_note)
-    local query = string.format([=[
+    local note_insert = string.format([=[
         INSERT INTO notes (title, category, path) VALUES ('%s', '%s', '%s');
         INSERT INTO notes_search (path, title, content) VALUES ('%s', '%s', '%s');
         ]=],
@@ -76,7 +76,24 @@ function M.add_note(db_file, new_note)
         new_note.path,
         new_note.title,
         new_note.content)
-    return exec_statement(db_file, query)
+    local note_insert_error = exec_statement(db_file, note_insert)
+    if note_insert_error then
+        return note_insert_error
+    end
+
+    if new_note.tags and #new_note.tags > 0 then
+        local tag_insert_values = {}
+        for _, tag in ipairs(new_note.tags) do
+            table.insert(
+                tag_insert_values,
+                string.format("('%s', '%s')", new_note.path, tag))
+        end
+        local tag_insert = "INSERT INTO note_tags (note_path, tag) VALUES "..table.concat(tag_insert_values, ", ")
+        local tag_insert_error = exec_statement(db_file, tag_insert)
+        if tag_insert_error then
+            return tag_insert_error
+        end
+    end
 end
 
 --[[
@@ -112,10 +129,16 @@ function M.query_notes(db_file, conditions)
                 n.path,
                 n.title,
                 n.category,
+                tags.tags,
                 ns.content
             FROM notes AS n
             INNER JOIN notes_search AS ns
                 ON n.path = ns.path
+            LEFT JOIN (
+                SELECT note_path, GROUP_CONCAT(tag, ',') as tags
+                FROM note_tags
+            ) AS tags
+                ON n.path = tags.note_path
             WHERE 1=1
         ]=]
     }
@@ -128,18 +151,24 @@ function M.query_notes(db_file, conditions)
     return exec_query(db_file, query)
 end
 
--- Underline control characters = \x1B[4m<my_text>\x1B[0m
+-- TODO: Underline control characters = \x1B[4m<my_text>\x1B[0m
 function M.search_notes(db_file, search_term)
     local query = string.format([=[
         SELECT
             n.path,
             n.title,
             n.category,
+            tags.tags,
             ns.content,
             snippet(notes_search, -1, '', '', '', 16) as snippet
         FROM notes_search('%s') AS ns
         INNER JOIN notes AS n
             ON ns.path = n.path
+        LEFT JOIN (
+            SELECT note_path, GROUP_CONCAT(tag, ',') as tags
+            FROM note_tags
+        ) AS tags
+            ON n.path = tags.note_path
         ]=],
         search_term)
     return exec_query(db_file, query)
