@@ -27,11 +27,11 @@ elseif (arg[1] == "get-note") then
     else
         print("Note titled '"..path.."' not found")
     end
-elseif (arg[1] == "add-note") then
+elseif (arg[1] == "save-note") then
     local title = arg[2]
     local category = arg[3]
     local content = io.read("*a")
-    local _, err = repo.add_note(title, content, category)
+    local _, err = repo.save_note(title, content, category)
     if err then
         print("[Error] "..err)
     end

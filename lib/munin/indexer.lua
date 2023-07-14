@@ -60,7 +60,7 @@ local function add_note(repo, note)
     local content = file:read("*all")
     if file then file:close() end
 
-    return repo.add_note(note.title, content, note.category)
+    return repo.save_note(note.title, content, note.category)
 end
 
 function M.index(repo)

@@ -28,13 +28,12 @@ end
 
 local repo = {}
 
-function repo.add_note(title, text, category)
+function repo.save_note(title, text, category)
     if not repo_exists(repo._path) then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
     local tags = parse_tags(text)
-    for _, t in ipairs(tags) do print("TAG: "..t) end
 
     local path = title
     if category then
@@ -48,12 +47,24 @@ function repo.add_note(title, text, category)
         path = path,
         content = text
     }
-    local error_msg = database.add_note(repo._db_path, note)
-    if error_msg then
-        return nil, "Failed to add new note: "..error_msg
-    else
-        return note
+
+    local existing_note, get_note_error = repo.get_note(path)
+    if get_note_error then
+        return nil, "Failed to check for existing note: "..get_note_error
     end
+
+    if existing_note then
+        local update_note_error = database.update_note(repo._db_path, note)
+        if update_note_error then
+            return nil, "Failed to update note: "..update_note_error
+        end
+    else
+        local error_msg = database.add_note(repo._db_path, note)
+        if error_msg then
+            return nil, "Failed to add new note: "..error_msg
+        end
+    end
+    return note
 end
 
 function repo.get_note(path)

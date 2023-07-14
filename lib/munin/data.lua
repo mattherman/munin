@@ -65,6 +65,22 @@ function M.create_database(db_file)
     return exec_statement(db_file, statement)
 end
 
+local function replace_tags(db_file, note_path, tags)
+    local tag_insert_values = {}
+    for _, tag in ipairs(tags) do
+        table.insert(
+            tag_insert_values,
+            string.format("('%s', '%s')", note_path, tag))
+    end
+    local tag_delete = string.format("DELETE FROM note_tags WHERE note_path = '%s'", note_path)
+    local tag_insert = "INSERT INTO note_tags (note_path, tag) VALUES "..table.concat(tag_insert_values, ", ")
+    local tag_replace = tag_delete..";"..tag_insert
+    local tag_replace_error = exec_statement(db_file, tag_replace)
+    if tag_replace_error then
+        return tag_replace_error
+    end
+end
+
 function M.add_note(db_file, new_note)
     local note_insert = string.format([=[
         INSERT INTO notes (title, category, path) VALUES ('%s', '%s', '%s');
@@ -82,17 +98,25 @@ function M.add_note(db_file, new_note)
     end
 
     if new_note.tags and #new_note.tags > 0 then
-        local tag_insert_values = {}
-        for _, tag in ipairs(new_note.tags) do
-            table.insert(
-                tag_insert_values,
-                string.format("('%s', '%s')", new_note.path, tag))
-        end
-        local tag_insert = "INSERT INTO note_tags (note_path, tag) VALUES "..table.concat(tag_insert_values, ", ")
-        local tag_insert_error = exec_statement(db_file, tag_insert)
-        if tag_insert_error then
-            return tag_insert_error
-        end
+        return replace_tags(db_file, new_note.path, new_note.tags)
+    end
+end
+
+function M.update_note(db_file, note)
+    local note_update = string.format([=[
+        UPDATE notes_search
+        SET content = '%s'
+        WHERE path = '%s'
+        ]=],
+        note.content,
+        note.path)
+    local note_update_error = exec_statement(db_file, note_update)
+    if note_update_error then
+        return note_update_error
+    end
+
+    if note.tags and #note.tags > 0 then
+        return replace_tags(db_file, note.path, note.tags)
     end
 end
 
