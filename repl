@@ -1,4 +1,4 @@
 #!/bin/bash
 SCRIPT_DIR=$(dirname "$0")
 export LUA_PATH="$SCRIPT_DIR/lib/?.lua;;"
-lua5.1 -i -e 'munin = require("munin.repo")'
+lua5.1 -i -e 'munin = require("munin.repo")' "$@"

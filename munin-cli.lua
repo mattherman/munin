@@ -11,6 +11,11 @@ if arg[1] == "init" then
     else
         print("Initialized new repository at "..repo._path)
     end
+elseif arg[1] == "sync" then
+    local index_err = require("munin.indexer").index(repo)
+    if index_err then
+        print("[Error] Failed to index repository at "..repo._path..": "..index_err)
+    end
 elseif (arg[1] == "get-note") then
     local path = arg[2]
     local note, err = repo.get_note(path)

@@ -47,7 +47,7 @@ function M.create_database(db_file)
         CREATE TABLE notes (
             path text PRIMARY KEY,
             title text NOT NULL,
-            category text NOT NULL
+            category text NULL
         );
 
         CREATE VIRTUAL TABLE notes_search USING FTS5(
@@ -71,12 +71,11 @@ function M.add_note(db_file, new_note)
         INSERT INTO notes_search (path, title, content) VALUES ('%s', '%s', '%s');
         ]=],
         new_note.title,
-        new_note.category,
+        new_note.category or "NULL",
         new_note.path,
         new_note.path,
         new_note.title,
         new_note.content)
-    print(query)
     return exec_statement(db_file, query)
 end
 
