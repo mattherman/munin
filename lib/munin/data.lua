@@ -120,20 +120,6 @@ function M.update_note(db_file, note)
     end
 end
 
---[[
-
-query = {
-    title = {
-        type = "match",
-        value = "My Title"
-    },
-    category = {
-        type = "like"
-        value = "category/%"
-    }
-}
-
---]]
 function M.query_notes(db_file, conditions)
     local add_match = function(t, k, v)
         table.insert(t, string.format("AND n.%s = '%s'", k, v))
@@ -153,7 +139,7 @@ function M.query_notes(db_file, conditions)
                 n.path,
                 n.title,
                 n.category,
-                tags.tags,
+                t.tags,
                 ns.content
             FROM notes AS n
             INNER JOIN notes_search AS ns
@@ -161,8 +147,8 @@ function M.query_notes(db_file, conditions)
             LEFT JOIN (
                 SELECT note_path, GROUP_CONCAT(tag, ',') as tags
                 FROM note_tags
-            ) AS tags
-                ON n.path = tags.note_path
+            ) AS t
+                ON n.path = t.note_path
             WHERE 1=1
         ]=]
     }
@@ -175,6 +161,26 @@ function M.query_notes(db_file, conditions)
     return exec_query(db_file, query)
 end
 
+function M.query_notes_by_tag(db_file, tag)
+    local query = string.format([=[
+        SELECT
+            n.path,
+            n.title,
+            n.category,
+            t.tags,
+            ns.content
+        FROM note_tags AS t
+        INNER JOIN notes AS n
+            ON t.note_path = n.path
+        INNER JOIN notes_search AS ns
+            ON n.path = ns.path
+        WHERE t.tag = '%s'
+        ]=],
+        tag)
+
+    return exec_query(db_file, query)
+end
+
 -- TODO: Underline control characters = \x1B[4m<my_text>\x1B[0m
 function M.search_notes(db_file, search_term)
     local query = string.format([=[
@@ -182,7 +188,7 @@ function M.search_notes(db_file, search_term)
             n.path,
             n.title,
             n.category,
-            tags.tags,
+            t.tags,
             ns.content,
             snippet(notes_search, -1, '', '', '', 16) as snippet
         FROM notes_search('%s') AS ns
@@ -191,8 +197,8 @@ function M.search_notes(db_file, search_term)
         LEFT JOIN (
             SELECT note_path, GROUP_CONCAT(tag, ',') as tags
             FROM note_tags
-        ) AS tags
-            ON n.path = tags.note_path
+        ) AS t
+            ON n.path = t.note_path
         ]=],
         search_term)
     return exec_query(db_file, query)

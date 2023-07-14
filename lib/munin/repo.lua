@@ -124,6 +124,14 @@ function repo.get_notes_by_category(category)
     return notes
 end
 
+function repo.get_notes_by_tag(tag)
+    if not repo_exists(repo._path) then
+        return nil, "Repository at "..repo._path.." does not exist"
+    end
+
+    return database.query_notes_by_tag(repo._db_path, tag)
+end
+
 function repo.get_notes()
     if not repo_exists(repo._path) then
         return nil, "Repository at "..repo._path.." does not exist"

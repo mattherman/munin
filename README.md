@@ -4,30 +4,24 @@ Munin is a note-taking library and knowledge base written in Lua. It is named af
 
 ## Development
 
-In order to use the `repl` or `munin-cli` scripts the library will need to be added to your `LUA_PATH`:
-```
-LUA_PATH=/path/to/repo/lib/munin/?.lua;;
-```
-
-The `;;` at the end ensures the default path is appended after these entries when Lua is loaded.
-
+Development of Munin requires Lua 5.1 and depends on `luafilesystem` and `lsqlite3` which can be installed via LuaRocks.
 Running `./repl` will open a Lua REPL with the library loaded into the table `munin`.
 
-## Plans
+To install `luafilesystem` you can just run `luarocks install --local luafilesystem`. If you have multiple versions of Lua installed you will need to also provide `--lua-version 5.1` to the commmand (this requires LuaRocks 3.x).
 
-Notes will be added to a SQLite database. They will support various tagging and categorizing functionality. The full-text search capabilities of SQLite will allow users to search through notes easily.
+Installing `lsqlite3` is a little more complex. In order to use the module you need to have a valid install of SQLite on your system. On Linux this includes the `sqlite3` andcd `libsqlite3-dev` packages. The `-dev` package provides the `sqlite3.h` file that will need to be found in the `SQLITE_DIR` variable provided to the install command:
 
-A CLI will allow users to interact with the library via the command line instead of programatically.
+```
+luarocks install --lcoal lsqlite3 SQLITE_DIR=/usr
+```
 
-A [Neovim](https://neovim.io) plugin will allow users to interact with their notes in a more user-friendly interface.
+On my system it was installed in `/usr/include`, but it may be installed in `/usr/local/include` or somewhere else entirely. Again, you can provide `--lua-version 5.1` if you have multiple Lua versions installed.
 
-The ability to export the notes as a static site may also be added, allowing users to host their notes on the web. Alternatively, this could be an interactive web interface, either read-only with the ability to search an follow links or a fully editable experience.
+Once it is installed you need to update your `LUA_CPATH` to reference the location of `lsqlite3.so`. You can find that location by running `luarocks show lsqlite3`. In my case it is `/home/matt/.luarocks/lib/lua/5.1/lqlite3.so` so I would add `/home/matt/.luarocks/lib/lua/5.1/?.so;;` to my `LUA_CPATH` variable. The `;;` suffix ensures that the default path will be appended along with the added value when Lua starts (but I'm not sure why this works).
 
-## Design
+## API
 
-### API
-
-The primary data structure will be a *Note*.
+The primary data structure is a *Note*.
 
 Example:
 ```
@@ -35,28 +29,31 @@ Example:
     title = "Lua Syntax Cheatsheet",
     tags = { "programming", "lua" }
     category = "programming/reference/lua"
-    links = { "Lua - Maps" }
+    links = { "programming/reference/lua/maps" }
     content = "..."
 }
 ```
 
-The Lua API will support operations for updating the index of notes as well as searching for notes by title, text, tags, or category.
+The `munin.repo` module supports operations for updating the index of notes as well as searching for notes by title, text, tags, or category. To use these functions you must first initialize your repository, ex. `repo = require("munin.repo").init("/path/to/repo")`.
 
 ```
-function find_workspace_root() -> string
+function create_new() -> Error
 
-function parse_note(raw_content: string) -> Note
-function index_note(note: Note) -> (IndexResult, Error)
-function remove_note(title: string) -> (IndexResult, Error)
-function sync_workspace(workspace_path: string) -> (IndexResult, Error)
+function save_note(title: string, text: string, category: string) -> (Note, Error)
 
-function get_note(title: string) -> (Note, Error)
-function get_note_links(title: string) -> ({ string }, Error)
+function get_note(path: string) -> (Note, Error)
 
 function get_notes() -> ({ Note }, Error)
-function get_notes_by_tags(tags: { string }) -> ({ Note }, Error)
-function get_notes_by_category(category: string) -> { Note }, Error)
-function search_notes(search_term: string) -> (SearchResult, Error)
+function get_notes_by_title(title: stirng) -> ({ Note }, Error)
+function get_notes_by_tag(tag: string) -> ({ Note }, Error)
+function get_notes_by_category(category: string) -> ({ Note }, Error)
+function search_notes(search_term: string) -> ({ SearchNote }, Error)
+```
+
+The `munin.indexer` module allows you to index all of the files in a directory into a repository. It requires a `repo` object initialized using `munin.repo`.
+
+```
+function index(repo: Repo) -> Error
 ```
 
 *Data Structures*
@@ -70,17 +67,15 @@ Note = {
     content = "string"
 }
 
-IndexResult = "string" ("index_updated" | "no_change")
-
 Error = "string"
 
-SearchResult = {
-    total_count = 0,
-    matches = {
-        title = "string",
-        field = "string" ("title" | "tag" | "content"),
-        context = "string"
-    }
+SearchNote = {
+    title = "string",
+    tags = { "string" },
+    category = "string"
+    links = { "string" },
+    content = "string"
+    snippet = "string"
 }
 ```
 
@@ -88,30 +83,32 @@ SearchResult = {
 
 ```
 CREATE TABLE notes (
-    id integer PRIMARY KEY,
+    path text PRIMARY KEY,
     title text NOT NULL,
-    category text NOT NULL,
-    content text NOT NULL
+    category text NULL
 );
 
-CREATE TABLE tags (
-    tag text PRIMARY KEY
+CREATE VIRTUAL TABLE notes_search USING FTS5(
+    path UNINDEXED,
+    title,
+    content
 );
 
 CREATE TABLE note_tags (
     tag text NOT NULL,
-    note_id integer NOT NULL,
-    FOREIGN KEY (tag) REFERENCES tags (tag),
-    FOREIGN KEY (note_id) REFERENCES notes (id)
+    note_path text NOT NULL,
+    FOREIGN KEY (note_path) REFERENCES notes (path)
 );
 ```
-### CLI
 
-The following commands will be supported by the CLI:
+## CLI
+
+The following commands are supported by the CLI:
 ```
-munin sync
-munin index-file <file>
-munin move-file <file> <new_file>
-munin search <search_term> [--tags <tag,>]
-munin edit <file>
+init                                        Create a new repository in the current directory
+sync                                        Indexes all markdown files in the current directory and saves them as notes
+save-note <title> <category> <content>      Reads note content from stdin and saves as title
+get-note <path>                             Retrieves and displays the note with title
+get-notes                                   Retrieves all notes
+search <search_term>                        Searches note titles and content for the search term (uses SQLite FTS5 query syntax)
 ```
