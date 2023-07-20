@@ -1,8 +1,8 @@
 package = "munin"
-version = "0.2.0-1"
+version = "0.2.1-1"
 source = {
-   url = "git+ssh://git@github.com/mattherman/munin.git",
-   tag = "0.2.0"
+   url = "git+https://git@github.com/mattherman/munin.git",
+   tag = "0.2.1"
 }
 description = {
    summary = "A note-taking library and knowledge base written in Lua.",
@@ -26,8 +26,8 @@ build = {
    type = "builtin",
    modules = {
       ["munin.data"] = "lib/munin/data.lua",
-      ["munin.repo"] = "lib/munin/repo.lua",
-      ["munin.indexer"] = "lib/munin/indexer.lua"
+      ["munin.indexer"] = "lib/munin/indexer.lua",
+      ["munin.repo"] = "lib/munin/repo.lua"
    },
    copy_directories = {
       "docs"
