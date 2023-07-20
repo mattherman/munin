@@ -12,7 +12,7 @@ To install `luafilesystem` you can just run `luarocks install --local luafilesys
 Installing `lsqlite3` is a little more complex. In order to use the module you need to have a valid install of SQLite on your system. On Linux this includes the `sqlite3` andcd `libsqlite3-dev` packages. The `-dev` package provides the `sqlite3.h` file that will need to be found in the `SQLITE_DIR` variable provided to the install command:
 
 ```
-luarocks install --lcoal lsqlite3 SQLITE_DIR=/usr
+luarocks install --local lsqlite3 SQLITE_DIR=/usr
 ```
 
 On my system it was installed in `/usr/include`, but it may be installed in `/usr/local/include` or somewhere else entirely. Again, you can provide `--lua-version 5.1` if you have multiple Lua versions installed.
