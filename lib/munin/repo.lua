@@ -68,14 +68,7 @@ function repo.save_note(title, text, category)
 end
 
 function repo.get_note(path)
-    if not repo_exists(repo._path) then
-        return nil, "Repository at "..repo._path.." does not exist"
-    end
-
-    local query = {
-        path = { type = "match", value = path }
-    }
-    local notes, error_msg = database.query_notes(repo._db_path, query)
+    local notes, error_msg = database.query_notes_by_path(repo._db_path, path)
 
     if notes then
         return notes[1]
@@ -89,10 +82,7 @@ function repo.get_notes_by_title(title)
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
-    local query = {
-        title = { type = "match", value = title }
-    }
-    return database.query_notes(repo._db_path, query)
+    return database.query_notes_by_title(repo._db_path, title)
 end
 
 function repo.get_notes_by_category(category)
@@ -100,28 +90,7 @@ function repo.get_notes_by_category(category)
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
-    local category_query = {
-        category = { type = "match", value = category }
-    }
-    local category_notes, category_error = database.query_notes(repo._db_path, category_query)
-    if category_error then
-        return nil, category_error
-    end
-
-    local subcategory_query = {
-        category = { type = "like", value = category.."/%" }
-    }
-    local subcategory_notes, subcategory_error = database.query_notes(repo._db_path, subcategory_query)
-    if subcategory_error then
-        return nil, category_error
-    end
-
-    local notes = category_notes or {}
-    for _, v in ipairs(subcategory_notes or {}) do
-        table.insert(notes, v)
-    end
-
-    return notes
+    return database.query_notes_by_category(repo._db_path, category)
 end
 
 function repo.get_notes_by_tag(tag)
@@ -137,7 +106,7 @@ function repo.get_notes()
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
-    return database.query_notes(repo._db_path, {})
+    return database.all_notes(repo._db_path)
 end
 
 function repo.search_notes(search_term)
