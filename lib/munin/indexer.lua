@@ -27,19 +27,21 @@ local patterns = {
 
 local function matches_extension(file, allowed_file_extensions)
     local file_extension = file:match(patterns.extension) or ""
-    print("ext = "..file_extension)
     for _, ext in ipairs(allowed_file_extensions) do
-        if ext == file_extension then print("Matched!"); return true end
+        if ext == file_extension then return true end
     end
 end
 
-local function index_directory(repo, path, file_extensions)
+local function starts_with(str, str_to_match)
+    return str:sub(1, string.len(str_to_match)) == str_to_match
+end
+
+local function index_directory(repo, path, extensions_to_match)
     log("\t"..path)
     local notes = {}
-    local extensions_to_match = file_extensions or { "md" }
     for file in lfs.dir(path) do
         log("\t\t"..file)
-        if file ~= "." and file ~= ".." and file ~= ".munin" then
+        if not starts_with(file, ".") then
             local file_path = path..'/'..file
             local file_attr, error_msg = lfs.attributes(file_path)
             if error_msg then
@@ -47,18 +49,15 @@ local function index_directory(repo, path, file_extensions)
             end
 
             if file_attr.mode == "directory" then
-                local dir_notes = index_directory(repo, file_path, file_extensions)
+                local dir_notes = index_directory(repo, file_path, extensions_to_match)
                 for _, n in ipairs(dir_notes or {}) do
                     table.insert(notes, n)
                 end
             elseif matches_extension(file, extensions_to_match) then
                 local note_path = file_path:sub(string.len(repo._path) + 2)
-                table.insert(notes, {
-                    title = file:match(patterns.title),
-                    category = note_path:match(patterns.category),
-                    note_path = note_path
-                })
-                print("Added!")
+                local title = file:match(patterns.title)
+                local category = note_path:match(patterns.category)
+                table.insert(notes, { title = title, category = category, note_path = note_path })
             end
         end
     end
@@ -96,6 +95,7 @@ function M.index(repo, file_extensions)
     log("\tDone")
 
     log("Gathering files...")
+    file_extensions = file_extensions or { "md" }
     local note_files = index_directory(repo, repo._path, file_extensions)
 
     log("Adding files to database...")
