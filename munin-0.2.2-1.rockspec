@@ -1,8 +1,8 @@
 package = "munin"
-version = "0.2.1-1"
+version = "0.2.2-1"
 source = {
    url = "git+https://git@github.com/mattherman/munin.git",
-   tag = "0.2.1"
+   tag = "0.2.2"
 }
 description = {
    summary = "A note-taking library and knowledge base written in Lua.",
