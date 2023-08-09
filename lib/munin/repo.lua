@@ -13,11 +13,6 @@ local function backup_path(repo_path)
     return repo_path.."/.munin/notes.db.backup"
 end
 
-local function repo_exists(repo_path)
-    local db, err = lfs.attributes(db_path(repo_path))
-    return db ~= nil, err
-end
-
 local function parse_tags(text)
     local tags = {}
     for tag in text:gmatch("%@([%w-_]+)") do
@@ -28,8 +23,13 @@ end
 
 local repo = {}
 
+function repo.exists()
+    local db, err = lfs.attributes(repo._db_path)
+    return db ~= nil, err
+end
+
 function repo.save_note(title, text, category)
-    if not repo_exists(repo._path) then
+    if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
@@ -78,7 +78,7 @@ function repo.get_note(path)
 end
 
 function repo.get_notes_by_title(title)
-    if not repo_exists(repo._path) then
+    if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
@@ -86,7 +86,7 @@ function repo.get_notes_by_title(title)
 end
 
 function repo.get_notes_by_category(category)
-    if not repo_exists(repo._path) then
+    if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
@@ -94,7 +94,7 @@ function repo.get_notes_by_category(category)
 end
 
 function repo.get_notes_by_tag(tag)
-    if not repo_exists(repo._path) then
+    if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
@@ -102,7 +102,7 @@ function repo.get_notes_by_tag(tag)
 end
 
 function repo.get_notes()
-    if not repo_exists(repo._path) then
+    if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 
@@ -110,7 +110,7 @@ function repo.get_notes()
 end
 
 function repo.search_notes(search_term)
-    if not repo_exists(repo._path) then
+    if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
 

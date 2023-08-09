@@ -1,4 +1,5 @@
 local lfs = require("lfs")
+local utils = require("munin.utils")
 
 local M = {}
 
@@ -19,14 +20,7 @@ local function log(msg)
     print("["..timestamp.."] "..msg)
 end
 
-local patterns = {
-    extension = ".+%.(%a*)",
-    category = "(.*)%/",
-    title = "(.+)%."
-}
-
-local function matches_extension(file, allowed_file_extensions)
-    local file_extension = file:match(patterns.extension) or ""
+local function matches_extension(file_extension, allowed_file_extensions)
     for _, ext in ipairs(allowed_file_extensions) do
         if ext == file_extension then return true end
     end
@@ -53,11 +47,15 @@ local function index_directory(repo, path, extensions_to_match)
                 for _, n in ipairs(dir_notes or {}) do
                     table.insert(notes, n)
                 end
-            elseif matches_extension(file, extensions_to_match) then
-                local note_path = file_path:sub(string.len(repo._path) + 2)
-                local title = file:match(patterns.title)
-                local category = note_path:match(patterns.category)
-                table.insert(notes, { title = title, category = category, note_path = note_path })
+            else
+                local parsed_path = utils.parse_file_path(file_path, repo._path)
+                if matches_extension(parsed_path.extension, extensions_to_match) then
+                    table.insert(notes, {
+                        title = parsed_path.title,
+                        category = parsed_path.category,
+                        note_path = parsed_path.relative_file_path
+                    })
+                end
             end
         end
     end

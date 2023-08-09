@@ -176,12 +176,14 @@ function M.add_note(db_file, new_note)
 end
 
 function M.update_note(db_file, note)
-    local note_update = [=[
-        UPDATE notes_search
-        SET content = :content
-        WHERE path = :path
-    ]=]
-    local note_update_error = exec_query(db_file, note_update)
+    local note_update = create_statement(
+        [=[
+            UPDATE notes_search
+            SET content = :content
+            WHERE path = :path
+        ]=],
+        { note.content, note.path })
+    local note_update_error = exec_statements(db_file, { note_update })
     if note_update_error then
         return note_update_error
     end
