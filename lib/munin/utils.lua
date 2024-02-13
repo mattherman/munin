@@ -16,7 +16,8 @@ local function get_note_path(title, category)
 end
 
 function M.parse_file_path(file_path, repo_path)
-    local relative_file_path = file_path:gsub(repo_path .. "/", "")
+    local escaped_repo_path = repo_path:gsub("%-", "%%-")
+    local relative_file_path = file_path:gsub(escaped_repo_path .. "/", "")
     local category = relative_file_path:match(patterns.category)
     local file = relative_file_path:match(patterns.file)
     local title = file:match(patterns.title)

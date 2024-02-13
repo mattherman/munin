@@ -1,4 +1,5 @@
 local sql = require("lsqlite3")
+local logger = require("munin.logger")
 
 local M = { tracing_enabled = false }
 
@@ -23,7 +24,7 @@ local function format_sqlite_error(code, msg)
 end
 
 local function begin_tracing(db)
-    db:trace(function (_, traced_sql) print("SQL:"..traced_sql) end)
+    db:trace(function (_, traced_sql) logger.trace("SQL:"..traced_sql) end)
 end
 
 local function exec_statements(db_file, statements)
@@ -37,12 +38,12 @@ local function exec_statements(db_file, statements)
     for _, statement in ipairs(statements) do
         local stmt, prepare_error_msg = db:prepare(statement.sql)
         if not stmt then
+            db:close()
             return format_sqlite_error(1, prepare_error_msg)
         end
 
         local parameters = statement.args
         if parameters and #parameters > 0 then
-            -- TODO: Handle unpack vs. table.unpack in different versions of lua
             stmt:bind_values(table_unpack(parameters))
         end
 
@@ -66,12 +67,12 @@ local function exec_query(db_file, query)
 
     local stmt, prepare_error_msg = db:prepare(query.sql)
     if not stmt then
-        return nil, format_sqlite_error(nil, prepare_error_msg)
+        db:close()
+        return nil, format_sqlite_error(1, prepare_error_msg)
     end
 
     local parameters = query.args
     if parameters and #parameters > 0 then
-        -- TODO: Handle unpack vs. table.unpack in different versions of lua
         stmt:bind_values(table_unpack(parameters))
     end
 
@@ -219,22 +220,21 @@ function M.query_notes_by_tag(db_file, tag)
         db_file,
         create_statement([=[
             SELECT
-                n.path,
-                n.title,
-                n.category,
-                t.tags,
-                ns.content
-            FROM note_tags AS t
-            INNER JOIN notes AS n
-                ON t.note_path = n.path
-            INNER JOIN notes_search AS ns
-                ON n.path = ns.path
-            WHERE t.tag = :tag
+                notes.path,
+                notes.title,
+                notes.category,
+                note_tags.tag,
+                notes_search.content
+            FROM note_tags
+            INNER JOIN notes
+                ON note_tags.note_path = notes.path
+            INNER JOIN notes_search
+                ON notes.path = notes_search.path
+            WHERE note_tags.tag = :tag
         ]=],
         { tag }))
 end
 
--- TODO: Underline control characters = \x1B[4m<my_text>\x1B[0m
 function M.search_notes(db_file, search_term)
     local query = create_statement([=[
         SELECT

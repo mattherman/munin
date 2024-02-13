@@ -1,4 +1,8 @@
 local database = require("munin.data")
+
+-- Set to true to enable diagnostics
+database.tracing_enabled = false
+
 local lfs = require("lfs")
 
 local function config_path(repo_path)
@@ -97,7 +101,6 @@ function repo.get_notes_by_tag(tag)
     if not repo.exists() then
         return nil, "Repository at "..repo._path.." does not exist"
     end
-
     return database.query_notes_by_tag(repo._db_path, tag)
 end
 
