@@ -33,4 +33,8 @@ function M.parse_file_path(file_path, repo_path)
     }
 end
 
+function M.get_absolute_path(note_path, repo_path)
+    return string.format("%s/%s.md", repo_path, note_path)
+end
+
 return M
