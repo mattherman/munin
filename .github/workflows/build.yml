@@ -20,6 +20,7 @@ jobs:
           janet-ver: 'latest'
           os: 'linux'
           cmd-deps: jpm -l load-lockfile
+          cmd-test: jpm -l test
 
       - name: Build Executable
         run: jpm -l build
