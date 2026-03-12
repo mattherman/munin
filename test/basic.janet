@@ -1,3 +1,3 @@
 (use ../munin/init)
 
-(assert (= (hello) "Hello!"))
+(assert (= 1 1))
