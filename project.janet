@@ -1,8 +1,10 @@
 (declare-project
   :name "munin"
-  :description ``` ```
-  :version "0.0.0")
+  :description ```A knowledge base and wiki static site generator.```
+  :version "0.0.1"
+  :dependencies ["https://github.com/bakpakin/mendoza.git"])
 
-(declare-source
-  :prefix "munin"
-  :source ["munin/init.janet"])
+(declare-executable
+  :name "munin"
+  :entry "munin/init.janet"
+  :install true)

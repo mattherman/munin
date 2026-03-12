@@ -1,0 +1,1 @@
+{:dependencies @["http://github.com/janet-lang/circlet.git"] :version "0.0.1" :paths @["/home/matt/Projects/mattherman/munin/jpm_tree/bin/mdz" "/home/matt/Projects/mattherman/munin/jpm_tree/lib/mendoza"] :url "https://github.com/bakpakin/mendoza.git" :tag "1f3fb6337ff0f197b79e0d8ab1e3e741b2b2d72b" :type :git}

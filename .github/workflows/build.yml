@@ -1,0 +1,25 @@
+name: build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Janet
+        uses: pyrmont/action-janet-test@v5
+        with:
+          janet-ver: 'latest'
+          os: 'linux'
+          cmd-deps: jpm -l deps
+
+      - name: Build Executable
+        run: jpm -l build

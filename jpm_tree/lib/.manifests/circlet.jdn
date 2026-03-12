@@ -1,0 +1,1 @@
+{:dependencies @[] :version "0.0.0" :paths @["/home/matt/Projects/mattherman/munin/jpm_tree/lib//circlet.so" "/home/matt/Projects/mattherman/munin/jpm_tree/lib//circlet.meta.janet" "/home/matt/Projects/mattherman/munin/jpm_tree/lib//circlet.a"] :url "http://github.com/janet-lang/circlet.git" :tag "2e84f542bffde5e0b08789a804fa80f2ebe5771e" :type :git}
