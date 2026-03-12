@@ -19,7 +19,7 @@ jobs:
         with:
           janet-ver: 'latest'
           os: 'linux'
-          cmd-deps: jpm -l deps
+          cmd-deps: make deps
 
       - name: Build Executable
-        run: jpm -l build
+        run: make build
