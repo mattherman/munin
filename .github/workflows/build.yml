@@ -19,7 +19,7 @@ jobs:
         with:
           janet-ver: 'latest'
           os: 'linux'
-          cmd-deps: make deps
+          cmd-deps: jpm -l load-lockfile
 
       - name: Build Executable
-        run: make build
+        run: jpm -l build
