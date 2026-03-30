@@ -4,6 +4,9 @@ Munin is a knowledge base written in [Janet](https://janet-lang.org). It is name
 
 ## Development
 
+To build the project:
+
 ```bash
-jpm build
+jpm -l build
 ```
+
