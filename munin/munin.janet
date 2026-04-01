@@ -1,7 +1,8 @@
 (import ./jdn)
+(import ./render)
 
 (def md-filename
-  ~(sequence (some :a) ".md" (not 1)))
+  (peg/compile ~(sequence (some (if-not ".md" 1)) ".md" -1)))
 
 (defn read-file :private [path]
   (with [f (file/open path)]
@@ -29,10 +30,17 @@
     (case (os/stat path :mode)
       :directory (each f (sort (os/dir path))
                    (collect-files (string path "/" f)))
-      :file (when true #(peg/match md-filename path)
+      :file (when (peg/match md-filename path)
               (print "Parsing " path " as markdown")
               (def page (parse-page (read-file path)))
               (pp page)
               (array/push pages page))))
-  (collect-files content-dir))
+  (collect-files content-dir)
 
+  (def html (map
+              (fn [[frontmatter page]] (render/render frontmatter page))
+              pages))
+  (pp html)
+  html)
+
+(peg/match md-filename "content/category/something.md")

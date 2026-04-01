@@ -4,6 +4,8 @@ Munin is a knowledge base written in [Janet](https://janet-lang.org). It is name
 
 ## Development
 
+Requires [`cmark`](https://github.com/commonmark/cmark).
+
 To build the project:
 
 ```bash
