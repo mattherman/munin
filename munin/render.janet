@@ -1,14 +1,35 @@
 (import ./markdown :as md)
 
-(defn escape-html [b]
-  b)
+(def void-elements
+  @{
+   :area true
+   :base true
+   :br true
+   :col true
+   :embed true
+   :hr true
+   :img true
+   :input true
+   :link true
+   :meta true
+   :param true
+   :source true
+   :track true
+   :wb true
+   })
+
+(defn escape-html [str]
+  (->> str
+      (string/replace-all "&" "&amp;")
+      (string/replace-all "<" "&lt;")
+      (string/replace-all ">" "&gt;")))
 
 (defn render-attrs [attrs]
   (string/join
     (map
       (fn [attr]
         (let [[name value] attr]
-          (string (string name) "=\"" value "\"")))
+          (string (string name) "=\"" (escape-html value) "\"")))
       (pairs attrs))
     " "))
 
@@ -28,32 +49,15 @@
             (string tag)
             (when (not (nil? attrs))
               (string " " (render-attrs attrs)))
-            ">"
-            (string/join (map html children))
-            "</"
-            (string tag)
-            ">")))
+            (if (void-elements tag)
+              " />"
+              (string
+                ">"
+                (string/join (map html children))
+                "</" (string tag) ">")))))
       (string node)))
 
 (defn render [frontmatter page]
   (def html (md/markdown->html page))
   html)
-
-(html [:html
-       [:body
-        [:div { :class "container" }
-         [:h1 "Title"]
-         [:p "This is the content"]
-         [:a { :href "http://google.com" :alt "something" } "My Link"]]]])
-
-
-(->> "hello & <world>"
-    (string/replace-all "&" "&amp;")
-    (string/replace-all "<" "&lt;")
-    (string/replace-all ">" "&gt;"))
-
-(pp (->> "hello & <world>"
-     (string/replace-all "&" "&amp;")
-     (string/replace-all "<" "&lt;")
-     (string/replace-all ">" "&gt;")))
 
