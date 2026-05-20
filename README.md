@@ -4,11 +4,16 @@ Munin is a knowledge base written in [Janet](https://janet-lang.org). It is name
 
 ## Development
 
-Requires [`cmark`](https://github.com/commonmark/cmark).
+Requires [`cmark`](https://github.com/commonmark/cmark) to be installed.
 
-To build the project:
+To install project dependencies:
 
 ```bash
-jpm -l build
+make deps
 ```
 
+To build the executable to `build/munin`:
+
+```bash
+make build
+```

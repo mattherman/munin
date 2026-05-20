@@ -57,7 +57,6 @@
                 "</" (string tag) ">")))))
       (string node)))
 
-(defn render [frontmatter page]
-  (def html (md/markdown->html page))
-  html)
+(defn render [page]
+  (md/markdown->html (page :markdown)))
 
