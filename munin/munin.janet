@@ -9,6 +9,30 @@
   (with [f (file/open path)]
     (file/read f :all)))
 
+(defn create-dirs :private
+  "Recursively create directories for a path if they don't exist
+  Copied from mendoza: https://github.com/bakpakin/mendoza/blob/master/mendoza/init.janet"
+  [path]
+  (def parts (tuple/slice (string/split "/" path) 0 -2))
+  (def buf @"")
+  (each part parts
+    (buffer/push-string buf part)
+    (def path (string buf))
+    (unless (= (os/stat path :mode) :directory)
+      (os/mkdir path))
+    (buffer/push-string buf "/")))
+
+(defn write-file :private [path content]
+  (create-dirs path)
+  (with [f (file/open path :w)]
+    (file/write f content)))
+
+(defn get-relative-path [path]
+  (path/join
+    ;(match (path/parts path)
+      [x y & rest] @[y ;rest]
+      x x)))
+
 (defn parse-page [path]
   (def content (read-file path))
   (def end-of-frontmatter (string/find "---" content))
@@ -21,7 +45,9 @@
 
   (def frontmatter (jdn/decode raw-frontmatter))
 
-  {:path path
+  (def relative-path (get-relative-path path))
+
+  {:path relative-path
    :frontmatter frontmatter
    :markdown markdown})
 
@@ -41,11 +67,6 @@
               (array/push pages page))))
   (collect-pages content-dir)
 
-  (defn write-file [path content]
-    (print "dirname = " (path/dirname path))
-    (with [f (file/open path :w)]
-      (file/write f content)))
-
   (if-not (= (os/stat output-dir :mode) :directory)
     (os/mkdir output-dir))
 
@@ -56,6 +77,4 @@
     (def output-path-html
       (string/replace ".md" ".html" output-path))
     (print "output-path-html = " output-path-html)
-    (write-file output-path-html
-                (render/render page))))
-  
+    (write-file output-path-html (render/render page))))
