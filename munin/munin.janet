@@ -67,9 +67,6 @@
               (array/push pages page))))
   (collect-pages content-dir)
 
-  (if-not (= (os/stat output-dir :mode) :directory)
-    (os/mkdir output-dir))
-
   (each page pages
     (def output-path
       (string output-dir "/" (page :path)))
