@@ -3,4 +3,4 @@
 
 # Category
 
-Link to [[Something]]
+Something in a category

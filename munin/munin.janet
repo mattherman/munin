@@ -34,6 +34,7 @@
       x x)))
 
 (defn parse-page [path]
+  (print "=> " path)
   (def content (read-file path))
   (def end-of-frontmatter (string/find "---" content))
   (def raw-frontmatter
@@ -47,9 +48,9 @@
 
   (def relative-path (get-relative-path path))
 
-  {:path relative-path
-   :frontmatter frontmatter
-   :markdown markdown})
+  @{:path relative-path
+    :title (frontmatter :title)
+    :markdown markdown})
 
 (defn build [&opt content-dir output-dir]
   (default content-dir "content")
@@ -61,17 +62,13 @@
       :directory (each f (sort (os/dir path))
                    (collect-pages (string path "/" f)))
       :file (when (peg/match md-filename path)
-              (print "Parsing " path " as markdown")
               (def page (parse-page path))
-              (pp page)
               (array/push pages page))))
   (collect-pages content-dir)
 
   (each page pages
     (def output-path
       (string output-dir "/" (page :path)))
-    (print "output-path = " output-path)
     (def output-path-html
       (string/replace ".md" ".html" output-path))
-    (print "output-path-html = " output-path-html)
     (write-file output-path-html (render/render page))))

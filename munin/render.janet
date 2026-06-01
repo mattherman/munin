@@ -1,4 +1,5 @@
 (import ./markdown :as md)
+(import ./template)
 
 (def void-elements
   @{
@@ -58,5 +59,6 @@
       (string node)))
 
 (defn render [page]
-  (md/markdown->html (page :markdown)))
+  (put page :html (md/markdown->html (page :markdown)))
+  (html (template/article page)))
 
