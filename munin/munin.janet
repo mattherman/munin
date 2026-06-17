@@ -1,8 +1,9 @@
 (import ./jdn)
 (import ./render)
+(import ./markdown :as md)
 (import spork/path :as path)
 
-(def md-filename
+(def md-filename :private
   (peg/compile ~(sequence (some (if-not ".md" 1)) ".md" -1)))
 
 (defn read-file :private [path]
@@ -27,11 +28,15 @@
   (with [f (file/open path :w)]
     (file/write f content)))
 
-(defn get-relative-path [path]
+(defn get-relative-path :private [path]
   (path/join
     ;(match (path/parts path)
       [x y & rest] @[y ;rest]
       x x)))
+
+(defn get-output-path :private [output-dir page]
+  (string/replace ".md" ".html"
+    (path/join output-dir (page :path))))
 
 (defn parse-page [path]
   (print "=> " path)
@@ -50,25 +55,25 @@
 
   @{:path relative-path
     :title (frontmatter :title)
-    :markdown markdown})
+    :markdown markdown
+    :html (md/markdown->html markdown)})
 
 (defn build [&opt content-dir output-dir]
   (default content-dir "content")
   (default output-dir "site")
 
-  (def pages @[])
+  (def pages @{})
   (defn collect-pages [path]
     (case (os/stat path :mode)
       :directory (each f (sort (os/dir path))
                    (collect-pages (string path "/" f)))
       :file (when (peg/match md-filename path)
               (def page (parse-page path))
-              (array/push pages page))))
+              (put pages (page :title) page))))
   (collect-pages content-dir)
 
   (each page pages
-    (def output-path
-      (string output-dir "/" (page :path)))
-    (def output-path-html
-      (string/replace ".md" ".html" output-path))
-    (write-file output-path-html (render/render page))))
+    (def output-path (get-output-path output-dir page))
+    (->> page
+      (render/render)
+      (write-file output-path))))

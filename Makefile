@@ -1,10 +1,10 @@
 # Variables
 JPM = jpm
-BUILD_DIR = build
-TREE_DIR = jpm_tree
+BUILD_DIR = ./build
+TREE_DIR = ./jpm_tree
 BINARY_NAME = munin
 
-.PHONY: deps build test help
+.PHONY: deps build test run repl help
 
 deps:
 	@echo "Installing dependencies..."
@@ -19,6 +19,9 @@ test:
 	@echo "Running tests..."
 	$(JPM) -l test
 
+run:
+	$(BUILD_DIR)/munin build
+
 repl:
 	$(JPM) -l janet
 
@@ -28,4 +31,5 @@ help:
 	@echo "  make deps   - Install dependendencies
 	@echo "  make build  - Build the Janet executable"
 	@echo "  make test   - Run tests"
+	@echo "  make run"   - Run the application"
 	@echo "  make repl   - Start REPL"

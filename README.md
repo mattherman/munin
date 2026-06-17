@@ -17,3 +17,9 @@ To build the executable to `build/munin`:
 ```bash
 make build
 ```
+
+## Design
+
+Read each markdown file
+Parse metadata from frontmatter
+Create map of title -> page
