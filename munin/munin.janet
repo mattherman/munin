@@ -6,6 +6,9 @@
 (def md-filename :private
   (peg/compile ~(sequence (some (if-not ".md" 1)) ".md" -1)))
 
+(def page-link :private
+  (peg/compile ~(* "[[" (<- (any (if-not "]]" 1))) "]]")))
+
 (defn read-file :private [path]
   (with [f (file/open path)]
     (file/read f :all)))
@@ -58,6 +61,14 @@
     :markdown markdown
     :html (md/markdown->html markdown)})
 
+(defn replace-links :private [pages html]
+  (defn subst-anchor-tag [_ title]
+    (def target (get pages title))
+    (def href (string/replace ".md" ".html" (target :path)))
+    (def text (target :title))
+    (string "<a href='/" href "'>" text "</a>"))
+  (peg/replace-all page-link subst-anchor-tag html))
+
 (defn build [&opt content-dir output-dir]
   (default content-dir "content")
   (default output-dir "site")
@@ -76,4 +87,5 @@
     (def output-path (get-output-path output-dir page))
     (->> page
       (render/render)
+      (replace-links pages)
       (write-file output-path))))

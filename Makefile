@@ -4,7 +4,7 @@ BUILD_DIR = ./build
 TREE_DIR = ./jpm_tree
 BINARY_NAME = munin
 
-.PHONY: deps build test run repl help
+.PHONY: deps build test run repl serve help
 
 deps:
 	@echo "Installing dependencies..."
@@ -25,6 +25,9 @@ run:
 repl:
 	$(JPM) -l janet
 
+serve:
+	python3 -m http.server 8000 --directory site
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -33,3 +36,4 @@ help:
 	@echo "  make test   - Run tests"
 	@echo "  make run"   - Run the application"
 	@echo "  make repl   - Start REPL"
+	@echo "  make serve  - Serve the website (requires Python)"
