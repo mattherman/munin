@@ -3,10 +3,10 @@
 (import ./markdown :as md)
 (import spork/path :as path)
 
-(def md-filename :private
+(def md-filename-pattern :private
   (peg/compile ~(sequence (some (if-not ".md" 1)) ".md" -1)))
 
-(def page-link :private
+(def page-link-pattern :private
   (peg/compile ~(* "[[" (<- (any (if-not "]]" 1))) "]]")))
 
 (defn read-file :private [path]
@@ -56,39 +56,30 @@
 
   (def relative-path (get-relative-path path))
 
-  (def href (string/replace ".md" ".html" relative-path))
+  (def href (string/replace ".md" ".html" (string "/" relative-path)))
 
   @{:path relative-path
     :href href
     :title (frontmatter :title)
     :markdown markdown
-    :html (md/markdown->html markdown)})
+    :html (md/markdown->html markdown)
+    :backlinks @()})
+
+(defn page-link [page]
+  (string "<a href='" (page :href) "'>" (page :title) "</a>"))
 
 (defn process-links :private [pages page]
-  (def links @())
   (defn subst-anchor-tag [_ title]
-    (array/push links title)
     (def target (get pages title))
-    (string "<a href='/" (target :href) "'>" title "</a>"))
+    (array/push (target :backlinks) @{ :href (page :href) :text (page :title)})
+    (page-link target))
   (def modified-html
     (peg/replace-all
-      page-link
+      page-link-pattern
       subst-anchor-tag
       (page :html)))
   (put page :html modified-html)
-  (put page :links-to links)
   page)
-
-(defn process-backlinks [pages]
-  (def backlinks @{})
-  (each page pages
-    (each target (page :links-to)
-      (def source (page :title))
-      (def list (get backlinks target))
-      (if list
-        (array/push list source)
-        (put backlinks target @(source)))))
-  backlinks)
 
 (defn build [&opt content-dir output-dir]
   (default content-dir "content")
@@ -99,7 +90,7 @@
     (case (os/stat path :mode)
       :directory (each f (sort (os/dir path))
                    (collect-pages (string path "/" f)))
-      :file (when (peg/match md-filename path)
+      :file (when (peg/match md-filename-pattern path)
               (def page (parse-page path))
               (put pages (page :title) page))))
   (collect-pages content-dir)
@@ -107,7 +98,7 @@
   (each page pages
     (process-links pages page))
 
-  (def backlinks (process-backlinks pages))
+  (each page pages (pp page))
 
   (each page pages
     (def output-path (get-output-path output-dir page))

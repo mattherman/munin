@@ -6,7 +6,9 @@
 
 This is the index of the site.
 
-Here's a page link to [[A Category Landing Page]]
+Here's a page link to [[A Category Landing Page]].
+
+And another to [[Something!]].
 
 ## Testing Markdown
 

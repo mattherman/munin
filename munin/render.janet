@@ -58,5 +58,7 @@
       (string node)))
 
 (defn render [page]
-  (html (template/article page)))
+  (def tmpl (template/article page))
+  (pp tmpl)
+  (html tmpl))
 

@@ -1,10 +1,21 @@
+(defn backlink :private [link]
+  (let
+    [href (link :href)
+     text (link :text)]
+    [:a { :href href } text]))
+
+(defn backlinks :private [page]
+  (let [backlinks (page :backlinks)]
+    (tuple/slice (map backlink backlinks))))
+
 (defn article [page]
   [:html
    [:head
     [:meta { :charset "UTF-8"}]
     [:meta { :name "viewport" :content "width=device-width, initial-scale=1.0" }]
     [:title (page :title)]]
-   [:body (page :html)]]
+   [:body (page :html)]
+   [:footer ;(backlinks page)]]
   )
 
 #<!DOCTYPE html>
