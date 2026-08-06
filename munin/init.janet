@@ -5,8 +5,6 @@
         command (get args 0 "")]
 
     (case command
-      "build" (do
-                (print "🔨 Building wiki...")
-                (munin/build))
+      "build" (munin/build)
       "help"  (print "Usage: munin [build|help]")
       (print "Unknown command. Try 'munin help'"))))

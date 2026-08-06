@@ -5,7 +5,7 @@
     [:a { :href href } text]))
 
 (defn backlinks :private [page]
-  (let [backlinks (page :backlinks)]
+  (let [backlinks (page :linked-from)]
     (tuple/slice (map backlink backlinks))))
 
 (defn article [page]

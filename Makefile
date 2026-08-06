@@ -31,9 +31,9 @@ serve:
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  make deps   - Install dependendencies
+	@echo "  make deps   - Install dependendencies"
 	@echo "  make build  - Build the Janet executable"
 	@echo "  make test   - Run tests"
-	@echo "  make run"   - Run the application"
+	@echo "  make run    - Run the application"
 	@echo "  make repl   - Start REPL"
 	@echo "  make serve  - Serve the website (requires Python)"

@@ -42,7 +42,6 @@
     (path/join output-dir (page :path))))
 
 (defn parse-page [path]
-  (print "=> " path)
   (def content (read-file path))
   (def end-of-frontmatter (string/find "---" content))
   (def raw-frontmatter
@@ -64,7 +63,8 @@
     :template (frontmatter :template)
     :markdown markdown
     :html (md/markdown->html markdown)
-    :backlinks @()})
+    :links-to @()
+    :linked-from @()})
 
 (defn page-link [page]
   (string "<a href='" (page :href) "'>" (page :title) "</a>"))
@@ -72,7 +72,8 @@
 (defn process-links :private [pages page]
   (defn subst-anchor-tag [_ title]
     (def target (get pages title))
-    (array/push (target :backlinks) @{ :href (page :href) :text (page :title)})
+    (array/push (page :links-to) @{ :href (target :href) :text (target :title)})
+    (array/push (target :linked-from) @{ :href (page :href) :text (page :title)})
     (page-link target))
   (def modified-html
     (peg/replace-all
@@ -86,21 +87,37 @@
   (default content-dir "content")
   (default output-dir "site")
 
+  (def start-time (os/clock))
+
+  (print "building wiki...")
+
+  (print "\ndiscovering pages...")
   (def pages @{})
   (defn collect-pages [path]
     (case (os/stat path :mode)
       :directory (each f (sort (os/dir path))
                    (collect-pages (string path "/" f)))
       :file (when (peg/match md-filename-pattern path)
+              (printf "\t%s" path)
               (def page (parse-page path))
               (put pages (page :title) page))))
   (collect-pages content-dir)
+  (printf "\tfound %d pages" (length (keys pages)))
 
+  (print "\nprocessing links...")
   (each page pages
     (process-links pages page))
+  (printf "\tprocessed %d links" (sum (map |(length ($ :links-to)) pages)))
+  (printf "\tprocessed %d backlinks" (sum (map |(length ($ :linked-from)) pages)))
 
+  (print "\nrendering pages...")
   (each page pages
     (def output-path (get-output-path output-dir page))
+    (printf "\t%s -> %s" (page :path) output-path)
     (->> page
       (render/render)
-      (write-file output-path))))
+      (write-file output-path)))
+
+  (def duration-ms (math/floor (* 1000 (- (os/clock) start-time))))
+
+  (printf "\ndone. built %d pages in %dms" (length (keys pages)) duration-ms))
