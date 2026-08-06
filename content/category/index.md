@@ -1,4 +1,5 @@
-{ :title "A Category Landing Page" }
+{ :title "A Category Landing Page"
+  :template "article" }
 ---
 
 # Category

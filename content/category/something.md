@@ -1,4 +1,5 @@
-{ :title "Something!" }
+{ :title "Something!"
+  :template "article" }
 ---
 
 # Something
