@@ -1,14 +1,22 @@
-(defn backlink :private [link]
+(defn link
+  :private
+  "Creates a link node. Expects a table containing an `:href` and `:text`."
+  [link]
   (let
     [href (link :href)
      text (link :text)]
     [:a { :href href } text]))
 
-(defn backlinks :private [page]
+(defn backlinks
+  :private
+  "Creates a collection of backlinks for a page."
+  [page]
   (let [backlinks (page :linked-from)]
-    (tuple/slice (map backlink backlinks))))
+    (tuple/slice (map link backlinks))))
 
-(defn article [page]
+(defn article
+  "Template for a wiki article page. Expects the page to include `:title`, `:created-date`, `:updated-date`, and `:backlinks`."
+  [page]
   [:html
    [:head
     [:meta { :charset "UTF-8"}]

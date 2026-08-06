@@ -1,4 +1,5 @@
 (def void-elements
+  "Returns nil if a tag is not self-closing."
   @{
    :area true
    :base true
@@ -16,13 +17,19 @@
    :wb true
    })
 
-(defn escape-html [str]
+(defn escape-html
+  :private
+  "Simple HTML escaping of strings. Handles `&`, `<`, and `>` only. Returns the escaped HTML."
+  [str]
   (->> str
       (string/replace-all "&" "&amp;")
       (string/replace-all "<" "&lt;")
       (string/replace-all ">" "&gt;")))
 
-(defn render-attrs [attrs]
+(defn render-attrs 
+  :private
+  "Accepts a table of HTML attribute pairs, renders them as `key='value'`, and returns a single joined string."
+  [attrs]
   (string/join
     (map
       (fn [attr]
@@ -32,7 +39,9 @@
     " "))
 
 
-(defn html [node]
+(defn html
+  "Render a Hiccup-style DOM node to HTML. Generated HTML is automatically escaped. Returns the rendered HTML for the node."
+  [node]
   (cond
     (string? node)
       (escape-html node)

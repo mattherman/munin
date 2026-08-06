@@ -1,4 +1,6 @@
-(defn markdown->html [markdown-str]
+(defn markdown->html
+  "Converts Markdown to HTML using the CommonMark library, `cmark`."
+  [markdown-str]
   (let [proc (os/spawn ["cmark" "--smart"] :p {:in :pipe :out :pipe})
         stdin (proc :in)
         stdout (proc :out)]
