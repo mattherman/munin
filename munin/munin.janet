@@ -61,6 +61,7 @@
   @{:path relative-path
     :href href
     :title (frontmatter :title)
+    :template (frontmatter :template)
     :markdown markdown
     :html (md/markdown->html markdown)
     :backlinks @()})
@@ -98,18 +99,8 @@
   (each page pages
     (process-links pages page))
 
-  (each page pages (pp page))
-
   (each page pages
     (def output-path (get-output-path output-dir page))
     (->> page
       (render/render)
       (write-file output-path))))
-
-# parse-page
-#  { :title "..." :markdown "..." }
-# process-links
-#  { :title "..." :markdown "..." :links-to @("a", "b", ...)}
-# process-backlinks
-#  { :title "..." :markdown "..." :links-to @(...) :linked-from @("d", "e", ...)}
-# markdown -> html -> replace-links -> template -> full html -> file
