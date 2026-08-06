@@ -14,9 +14,20 @@
     [:meta { :charset "UTF-8"}]
     [:meta { :name "viewport" :content "width=device-width, initial-scale=1.0" }]
     [:title (page :title)]]
-   [:body (page :html)]
-   [:footer ;(backlinks page)]]
-  )
+   [:body
+    [:header]
+    [:nav]
+    [:main
+      [:article
+        [:header
+          [:h1 (page :title)]
+          [:div (string/format "Page created: %s" (page :created-date))]
+          [:div (string/format "Page updated: %s" (page :updated-date))]]
+        [:hr]
+        [:section (page :html)]]
+      [:aside ;(backlinks page)]
+      ]
+    [:footer]]])
 
 #<!DOCTYPE html>
 #<html lang="en">

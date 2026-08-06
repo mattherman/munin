@@ -1,6 +1,7 @@
 (import ./jdn)
 (import ./render)
 (import ./markdown :as md)
+(import ./template)
 (import spork/path :as path)
 
 (def md-filename-pattern :private
@@ -61,6 +62,8 @@
     :href href
     :title (frontmatter :title)
     :template (frontmatter :template)
+    :created-date (frontmatter :created-date)
+    :updated-date (frontmatter :updated-date)
     :markdown markdown
     :html (md/markdown->html markdown)
     :links-to @()
@@ -115,7 +118,8 @@
     (def output-path (get-output-path output-dir page))
     (printf "\t%s -> %s" (page :path) output-path)
     (->> page
-      (render/render)
+      (template/article)
+      (render/html)
       (write-file output-path)))
 
   (def duration-ms (math/floor (* 1000 (- (os/clock) start-time))))

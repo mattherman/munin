@@ -1,8 +1,8 @@
 { :title "Something!"
-  :template "article" }
+  :template "article"
+  :created-date "2026-07-29"
+  :updated-date "2026-08-01" }
 ---
-
-# Something
 
 This is definitely something
 

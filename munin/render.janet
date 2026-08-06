@@ -1,5 +1,3 @@
-(import ./template)
-
 (def void-elements
   @{
    :area true
@@ -56,7 +54,4 @@
                 (string/join (map html children))
                 "</" (string tag) ">")))))
       (string node)))
-
-(defn render [page]
-  (html (template/article page)))
 

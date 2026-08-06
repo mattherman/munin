@@ -1,5 +1,7 @@
 { :title "Home"
-  :template "article" }
+  :template "article"
+  :created-date "2026-01-01"
+  :updated-date "2026-05-03" }
 ---
 
 # Welcome
