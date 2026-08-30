@@ -1,0 +1,15 @@
+{
+  "name": "Munin - Janet Wiki",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "janet-lang.vscode-janet"
+      ]
+    }
+  },
+  "postCreateCommand": "jpm deps",
+  "remoteUser": "vscode"
+}
